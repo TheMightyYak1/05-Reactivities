@@ -9,6 +9,7 @@ using Persistence;
 using Application.Activities;
 using Microsoft.AspNetCore.Authorization;
 using Application.Core;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -28,7 +29,7 @@ namespace API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreateActivity(Activity activity)
-        {
+        {   
             return HandleResult(await Mediator.Send(new Create.Command{Activity = activity}));
         }
 

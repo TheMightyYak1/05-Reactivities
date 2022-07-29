@@ -22,10 +22,44 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseXContentTypeOptions();
+app.UseReferrerPolicy(opt => opt.NoReferrer());
+app.UseXXssProtection(opt => opt.EnabledWithBlockMode());
+app.UseXfo(opt => opt.Deny());
+app.UseCsp(opt => opt
+    .BlockAllMixedContent()
+    .StyleSources(s => s.Self().CustomSources("https://fonts.googleapis.com", "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/semantic.min.css"))
+    .FontSources(s => s.Self().CustomSources(
+        "https://fonts.gstatic.com",
+        "data:",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/icons.woff2",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/icons.woff",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/icons.ttf",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/outline-icons.woff2",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/outline-icons.woff",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/outline-icons.ttf",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/brand-icons.woff2",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/brand-icons.woff",
+        "https://cdn.jsdelivr.net/npm/semantic-ui@2/dist/themes/default/assets/fonts/brand-icons.ttf"
+        ))
+    .FormActions(s => s.Self())
+    .FrameAncestors(s => s.Self())
+    .ImageSources(s => s.Self().CustomSources("https://res.cloudinary.com"))
+    .ScriptSources(s => s.Self())
+);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPIv5 v1"));
+}
+else
+{
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000");
+        await next.Invoke();
+    });
 }
 
 // app.UseHttpsRedirection();
